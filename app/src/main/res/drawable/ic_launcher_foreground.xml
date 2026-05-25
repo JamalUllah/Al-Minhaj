@@ -1,0 +1,51 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Inner shadow layer for the textbook -->
+    <path
+        android:fillColor="#1B120C"
+        android:pathData="M 36 29 L 76 29 C 79 29, 81 31, 81 34 L 81 79 C 81 82, 79 84, 76 84 L 36 84 C 33 84, 31 82, 31 79 L 31 34 C 31 31, 33 29, 36 29 Z" />
+
+    <!-- Main Emerald leather cover -->
+    <path
+        android:fillColor="#1E5631"
+        android:pathData="M 34 26 L 74 26 C 77 26, 79 28, 79 31 L 79 76 C 79 79, 77 81, 74 81 L 34 81 C 31 81, 29 79, 29 76 L 29 31 C 29 28, 31 26, 34 26 Z" />
+
+    <!-- Paper pages stack on edge -->
+    <path
+        android:fillColor="#FFFDF6"
+        android:pathData="M 73 29 L 77 29 L 77 78 L 73 78 Z" />
+
+    <!-- Spine binding indentation line -->
+    <path
+        android:strokeColor="#C79A13"
+        android:strokeWidth="1.5"
+        android:pathData="M 36 26 L 36 81" />
+
+    <!-- Center gold classical academic crest emblem -->
+    <path
+        android:fillColor="#C79A13"
+        android:pathData="M 54 44 L 59 49 L 54 54 L 49 49 Z" />
+
+    <!-- Book horizontal structural bars representing lines of wisdom -->
+    <path
+        android:strokeColor="#C79A13"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M 46 62 L 62 62" />
+
+    <path
+        android:strokeColor="#C79A13"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M 48 68 L 60 68" />
+
+    <!-- Golden bookmark ribbon hanging down -->
+    <path
+        android:fillColor="#C79A13"
+        android:pathData="M 48 26 L 48 50 L 52 46 L 56 50 L 56 26 Z" />
+
+</vector>
