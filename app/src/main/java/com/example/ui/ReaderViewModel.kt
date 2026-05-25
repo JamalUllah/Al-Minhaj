@@ -14,6 +14,11 @@ import com.example.data.BookRepository
 import com.example.data.Highlight
 import com.example.data.PageState
 import com.example.network.GeminiApiRepository
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import com.google.mlkit.vision.text.arabic.ArabicTextRecognizerOptions
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
@@ -349,7 +354,7 @@ class ReaderViewModel(private val repository: BookRepository) : ViewModel() {
     }
 
     /**
-     * Extracts text using Gemini AI (Multimodal Image OCR)
+     * Extracts text using ML Kit on-device OCR (Arabic + Latin script, no API key needed)
      */
     fun runOcrOnCurrentPage() {
         val bitmap = _currentPageBitmap.value ?: return
@@ -368,18 +373,68 @@ class ReaderViewModel(private val repository: BookRepository) : ViewModel() {
                         return@launch
                     }
                 }
-                
-                val resultText = GeminiApiRepository.extractArabicUrduText(bitmap)
-                if (resultText.startsWith("Error") || resultText.startsWith("Network")) {
-                    _ocrError.value = resultText
-                } else {
-                    repository.saveExtractedText(bookId, pageNum, resultText)
+
+                val resultJson = withContext(Dispatchers.IO) {
+                    runMlKitOcr(bitmap)
                 }
+                repository.saveExtractedText(bookId, pageNum, resultJson)
             } catch (e: Exception) {
                 _ocrError.value = "OCR Failed: ${e.localizedMessage}"
             } finally {
                 _isOcrLoading.value = false
             }
+        }
+    }
+
+    /**
+     * Runs ML Kit Arabic + Latin text recognition on a bitmap and returns JSON
+     * in the same format the rest of the app expects:
+     * { "lines": [ { "text": "...", "box_2d": [ymin, xmin, ymax, xmax] } ] }
+     */
+    private suspend fun runMlKitOcr(bitmap: Bitmap): String {
+        val image = InputImage.fromBitmap(bitmap, 0)
+        val imgW = bitmap.width.toFloat().coerceAtLeast(1f)
+        val imgH = bitmap.height.toFloat().coerceAtLeast(1f)
+
+        // Run Arabic recognizer first (handles Arabic & Urdu script)
+        val arabicRecognizer = TextRecognition.getClient(ArabicTextRecognizerOptions.Builder().build())
+        val arabicResult = arabicRecognizer.process(image).await()
+
+        // Also run Latin recognizer for any Roman/English text on the page
+        val latinRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+        val latinResult = latinRecognizer.process(image).await()
+
+        val lines = mutableListOf<String>()
+
+        // Collect all text blocks from both recognizers, normalizing bounding boxes to 0-1000
+        for (result in listOf(arabicResult, latinResult)) {
+            for (block in result.textBlocks) {
+                for (line in block.lines) {
+                    val text = line.text.trim()
+                    if (text.isEmpty()) continue
+                    val box = line.boundingBox
+                    if (box != null) {
+                        val ymin = ((box.top / imgH) * 1000).toInt().coerceIn(0, 1000)
+                        val xmin = ((box.left / imgW) * 1000).toInt().coerceIn(0, 1000)
+                        val ymax = ((box.bottom / imgH) * 1000).toInt().coerceIn(0, 1000)
+                        val xmax = ((box.right / imgW) * 1000).toInt().coerceIn(0, 1000)
+                        val escaped = text.replace("\"", "\\\"").replace("\n", " ")
+                        lines.add("""    { "text": "$escaped", "box_2d": [$ymin, $xmin, $ymax, $xmax] }""")
+                    } else {
+                        val escaped = text.replace("\"", "\\\"").replace("\n", " ")
+                        lines.add("""    { "text": "$escaped", "box_2d": [0, 0, 100, 1000] }""")
+                    }
+                }
+            }
+        }
+
+        arabicRecognizer.close()
+        latinRecognizer.close()
+
+        return if (lines.isEmpty()) {
+            """{ "lines": [] }"""
+        } else {
+            "{\n  \"lines\": [\n${lines.joinToString(",\n")}\n  ]\n}"
         }
     }
 
