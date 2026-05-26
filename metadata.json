@@ -1,0 +1,6 @@
+{
+  "name": "Al-Minhaj",
+  "description": "Scanned PDF Reader designed for classical Arabic & Urdu textbook study. Supports page-by-paragraph Gemini OCR, instant highlighting, AI dictionary syntax explanations, and Urdu/Arabic voice notes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
