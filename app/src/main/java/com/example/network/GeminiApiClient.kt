@@ -188,8 +188,10 @@ object GeminiApiRepository {
             return@withContext "Error: Gemini API key is missing."
         }
 
-        val prompt = "Explain this classical Arabic/Urdu phrase specifically in a Madrassah research context: \"$phrase\". " +
-                "Detail its lexical meaning, grammatical analysis (Sarf inflection or Nahw position if relevant), and how it is used in classical textbooks. Reply in clear Urdu or English."
+        val prompt = "Translate the following classical Arabic phrase strictly into Urdu. " +
+                "You MUST return ONLY the final clean Urdu translation. " +
+                "Do NOT write any English translation, any Arabic transcription, any summary, explanation, commentary, or notes. " +
+                "Just output the Urdu translation directly:\n\n\"$phrase\""
 
         val request = GenerateContentRequest(
             contents = listOf(
@@ -201,7 +203,7 @@ object GeminiApiRepository {
 
         try {
             val response = RetrofitClient.service.generateContent(apiKey, request)
-            response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: "No explanation available."
+            response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: "No translation available."
         } catch (e: Exception) {
             "Error: ${e.localizedMessage}"
         }

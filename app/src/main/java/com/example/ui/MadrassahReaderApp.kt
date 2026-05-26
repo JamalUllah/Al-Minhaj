@@ -2228,6 +2228,40 @@ fun OcrResearchPanel(
             }
         }
 
+        // Display AI Explanation/Summarization results (now strictly Arabic-to-Urdu translation)
+        if (aiExplanation != null) {
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = AntiqueIvory),
+                    border = BorderStroke(1.dp, CustomGold)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Translate, contentDescription = "Translation", tint = CustomGold, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("ترجمہ بذیعہ ذہین معاون (Urdu Translation)", fontWeight = FontWeight.Bold, color = CustomGold, fontSize = 14.sp)
+                            }
+                            IconButton(onClick = onClearAiState, modifier = Modifier.size(24.dp)) {
+                                Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.Gray)
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = aiExplanation,
+                            fontSize = 13.sp,
+                            color = DarkText,
+                            lineHeight = 18.sp
+                        )
+                    }
+                }
+            }
+        }
+
         // Scanned Extracted Text Box
         item {
             Card(
